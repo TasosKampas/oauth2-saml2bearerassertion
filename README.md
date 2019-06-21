@@ -1,22 +1,26 @@
 # oauth2-saml2bearerassertion
+
 How to test the OAuth2 SAML Bearer Assertion grant using an REST-STS instance
+
+## Getting Started
 
 Configuration with a single AM instance: http://openam.example.com:38080/openam
 
 (This can happen with an external IDP instead (or IDP on different realm) but to have all-in-one AM, I used an STS instance)
 
-Configurations
+### Configurations
+
 1. Change the security settings to use the JKS keystore and restart AM to take effect (because there is no SAML specific setting + STS can only read JKSkeystore see OPENAM-9385)
+![Screenshot](sts_keystore.png)
+2.Configure the SAML providers (SP and IDP, both hosted) and use the same certificate alias as specified in the STS instance:
+![Screenshot](saml_providers.png)
+3.Configure an OAuth2 Provider with the default settings
+4.Configure an OAuth2 Client (add a scope, for example, profile)
+5.Create a REST-STS instance (OPENAM->SAML2):
+![Screenshot](saml_sts_providers.png)
+![Screenshot](saml_sts_configuration.png)
 
-2. Configure the SAML providers (SP and IDP, both hosted) and use the same certificate alias as specified in the STS instance:
-
-3. Configure an OAuth2 Provider with the default settings
-
-4. Configure an OAuth2 Client (add a scope, for example, profile)
-
-5. Create a REST-STS instance (OPENAM->SAML2):
-
-Notes:
+### Notes:
 
 * The assertion must be signed
 * STS can only read a JKS keystore. (Keystore password is the .storepass and the Signing/Private Key entry password is 'changeit' by default)
@@ -25,9 +29,11 @@ Notes:
 * SAML issuer ID: that's the IDP URL.
 
 
-Single commands:
+### Single commands:
+
 1.Obtain an SSOToken:
 
+```sh
 curl -X POST \
   http://openam.example.com:38080/openam/json/authenticate \
   -H 'Accept-API-Version: resource=2.0, protocol=1.0' \
@@ -41,8 +47,11 @@ curl -X POST \
     "successUrl": "/openam/console",
     "realm": "/"
 }
+```
+
 2.Transform the SSOToken to a SAML assertion using the REST-STS instance:
 
+```bash
 curl -X POST \
   'http://openam.example.com:38080/openam/rest-sts/mytest?_action=translate' \
   -H 'Cache-Control: no-cache' \
@@ -61,8 +70,11 @@ curl -X POST \
 {
     "issued_token": "<saml:Assertion xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"s274ae80f03b097901a62dfe065db83821878e1b8e\" IssueInstant=\"2018-10-22T11:47:56Z\" Version=\"2.0\">\n<saml:Issuer>http://openam.example.com:38080/openam</saml:Issuer><ds:Signature xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">\n<ds:SignedInfo>\n<ds:CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>\n<ds:SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/>\n<ds:Reference URI=\"#s274ae80f03b097901a62dfe065db83821878e1b8e\">\n<ds:Transforms>\n<ds:Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/>\n<ds:Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/>\n</ds:Transforms>\n<ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>\n<ds:DigestValue>8A+8M3bSEzKj5CbLZ7HjZCByfQI=</ds:DigestValue>\n</ds:Reference>\n</ds:SignedInfo>\n<ds:SignatureValue>\nsH/6RWHHX3vX7yUeI5NEC1ZS8qs9w2vMmXJDwxSzAeZ41oQ6ejJdPj0xgGn3aa6TxyMDrcGWYHTq&#13;\n/sKDhAFImx8D1CSp+KZa8o/b5vX6VVOxUC6rMbsG8KZ9JJjIQhgnyyaGDvxUVk5g9TMMxOwPGqY2&#13;\nWfFnqt3/4ZNzNU+oUnH94d0wTLABFWSKTryiEzZkvGtIegNQRfETdEFyndahWZ6wpAAKoE72BJv8&#13;\nQOJXcbng+MGTmyjiPGCwlVL8iNTg4N16A0T3JxdKkHWmNqwZhTF0ZoeFIVdUd6y9BmXRwnkEePVn&#13;\n6F7xexi0/lmldH3GOwHGwofe7th4L1Hn4Orupg==\n</ds:SignatureValue>\n<ds:KeyInfo>\n<ds:X509Data>\n<ds:X509Certificate>\nMIIDYTCCAkmgAwIBAgIEDkXj/DANBgkqhkiG9w0BAQsFADBhMQswCQYDVQQGEwJVSzEQMA4GA1UE&#13;\nCBMHQnJpc3RvbDEQMA4GA1UEBxMHQnJpc3RvbDESMBAGA1UEChMJRm9yZ2VSb2NrMQswCQYDVQQL&#13;\nEwJBTTENMAsGA1UEAxMEdGVzdDAeFw0xODA0MDMxNDIxNDJaFw0yODAzMzExNDIxNDJaMGExCzAJ&#13;\nBgNVBAYTAlVLMRAwDgYDVQQIEwdCcmlzdG9sMRAwDgYDVQQHEwdCcmlzdG9sMRIwEAYDVQQKEwlG&#13;\nb3JnZVJvY2sxCzAJBgNVBAsTAkFNMQ0wCwYDVQQDEwR0ZXN0MIIBIjANBgkqhkiG9w0BAQEFAAOC&#13;\nAQ8AMIIBCgKCAQEAz6HdGc76+X9wRc+gyTMtZEPlbTRio4ugyTUBlEdDnE2MfAra3Wc12pcNRTT8&#13;\nm0Oj8nxHFWebYcQeqciYL4lmJg2ARLbMoQgXz9nyRp19cDLJZht9V193wsYWZFnBzVp73pPLWonS&#13;\nOJRWH+wZ7YJ9lR4KQKP7OVROUQCrFq9ensR+BRZa+QbnCQzK4RPss06kTGQ74HXkCAzZCslpS0H9&#13;\n7tPAnyLKPbuFP9l1Rv8I2FDPW5e3LIUw207VIL0Qoon/3OL5vxm6s9z5Xk+GSxztJonBxa/sGGjn&#13;\n9wn0WrVp3OkVs9zy4hIh/ktY5DAjhob+eG9XwmpT78ihTXwJW31dvwIDAQABoyEwHzAdBgNVHQ4E&#13;\nFgQUoi/ECAMD4NNxnxq6E5WgOsIYuhQwDQYJKoZIhvcNAQELBQADggEBAAtBs/QjN4pub0xOt8Tf&#13;\n2XHio/SrizkLDmfAJNsgExxi/w7jXS8LDxaAvIjzB+AChN0+A+geF4dxL6sW/It2F8w6rEeF3aou&#13;\n2nBjzloDZMHMgm11obQkSY9dxDmRhZKNJSOGqQACL5cgQY+m92kPzTG0dppJmgaGOJ8C2mhI33rR&#13;\nkIGlh5HFUO4N99PmghzX9u3PDNyCUPSKrmD9gS3PtF5KPvhaBuyO0GUQoj179Y5vGVxvmpoWXdIk&#13;\nbieMcK36DEBq3Dhm8DfRJGUCfLapdsxWw8MBIWF4o5p2q6wBPDH7enZQDfi2e3tI+hr+i+Swf5d3&#13;\nIYgeirlnHBcJyc7diis=\n</ds:X509Certificate>\n</ds:X509Data>\n</ds:KeyInfo>\n</ds:Signature><saml:Subject>\n<saml:NameID Format=\"urn:oasis:names:tc:SAML:1.0:nameid-format:unspecified\">demo</saml:NameID><saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">\n<saml:SubjectConfirmationData NotOnOrAfter=\"2018-10-22T11:57:56Z\" Recipient=\"http://openam.example.com:38080/openam/Consumer/metaAlias/sp1\"/></saml:SubjectConfirmation>\n</saml:Subject><saml:Conditions NotBefore=\"2018-10-22T11:47:56Z\" NotOnOrAfter=\"2018-10-22T11:57:56Z\">\n<saml:AudienceRestriction>\n<saml:Audience>http://openam.example.com:38080/openam/oauth2</saml:Audience>\n</saml:AudienceRestriction>\n</saml:Conditions>\n<saml:AuthnStatement AuthnInstant=\"2018-10-22T11:47:56Z\"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PreviousSession</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement></saml:Assertion>"
 }
+```
+
 3.Exchange the Assertion(after escaping the special characters and using a base64url encoder) for an OAuth2 Access Token:
 
+```bash
 curl -X POST \
   http://openam.example.com:38080/openam/oauth2/access_token \
   -H 'Authorization: Basic bXlDbGllbnRJRDpwYXNzd29yZA==' \
@@ -76,3 +88,4 @@ curl -X POST \
     "token_type": "Bearer",
     "expires_in": 3599
 }
+```
