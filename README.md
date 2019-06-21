@@ -11,14 +11,14 @@ Configuration with a single AM instance: http://openam.example.com:38080/openam
 ### Configurations
 
 1. Change the security settings to use the JKS keystore and restart AM to take effect (because there is no SAML specific setting + STS can only read JKSkeystore see OPENAM-9385)
-![Screenshot](sts_keystore.png)
+![Screenshot](images/sts_keystore.png)
 2.Configure the SAML providers (SP and IDP, both hosted) and use the same certificate alias as specified in the STS instance:
-![Screenshot](saml_providers.png)
+![Screenshot](images/saml_providers.png)
 3.Configure an OAuth2 Provider with the default settings
 4.Configure an OAuth2 Client (add a scope, for example, profile)
 5.Create a REST-STS instance (OPENAM->SAML2):
-![Screenshot](saml_sts_providers.png)
-![Screenshot](saml_sts_configuration.png)
+![Screenshot](images/saml_sts_providers.png)
+![Screenshot](images/saml_sts_configuration.png)
 
 ### Notes:
 
