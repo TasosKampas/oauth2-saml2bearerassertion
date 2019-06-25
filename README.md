@@ -1,6 +1,6 @@
 # oauth2-saml2bearerassertion
 
-How to test the OAuth2 SAML Bearer Assertion grant using an REST-STS instance
+How to test the OAuth2 SAML Bearer Assertion grant using an REST-STS instance in OpenAM
 
 ## Getting Started
 
@@ -15,6 +15,7 @@ Configuration with a single AM instance: http://openam.example.com:38080/openam
 2.Configure the SAML providers (SP and IDP, both hosted) and use the same certificate alias as specified in the STS instance:
 ![Screenshot](images/saml_providers.png)
 3.Configure an OAuth2 Provider with the default settings
+
 4.Configure an OAuth2 Client (add a scope, for example, profile)
 5.Create a REST-STS instance (OPENAM->SAML2):
 ![Screenshot](images/saml_sts_providers.png)
